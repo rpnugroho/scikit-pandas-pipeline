@@ -35,16 +35,14 @@ class DFOrdinalEncoder(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         X = X.copy()
-        # Create mask to preserve missing value
-        # self.na_mask = X.isna()
         # Impute missing value with most_frequent variable
-        # becase OrdinalEncoder cannot takes missing value
-        # self.imputer.fit(X)
+        # because OrdinalEncoder cannot takes missing value
         self.encoder.fit(self.imputer.fit_transform(X))
         return self
 
     def transform(self, X):
         X = X.copy()
+        # get missing value mask
         na_mask = X.isna()
         # Impute missing value, and encode
         data = self.encoder.transform(self.imputer.transform(X))
@@ -101,23 +99,23 @@ class DFKBinsDiscretizer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         X = X.copy()
-        # Create mask to preserve missing value
-        self.na_mask = X.isna()
         # Impute missing value with most_frequent variable
-        # becase OrdinalEncoder cannot takes missing value
+        # because OrdinalEncoder cannot takes missing value
         self.imputer.fit(X)
         self.discretizer.fit(self.imputer.transform(X))
         return self
 
     def transform(self, X):
         X = X.copy()
+        # get missing value mask
+        na_mask = X.isna()
         if self.encode == 'ordinal':
             data = self.discretizer.transform(self.imputer.transform(X))
             X_ = pd.DataFrame(data=data.astype(self.dtype),
                               index=X.index,
                               columns=X.columns)
             # Get back missing using mask
-            return X_.mask(self.na_mask, self.fill_value)
+            return X_.mask(na_mask, self.fill_value)
         # self.encode == 'onehot'
         # At the time i write this code,
         # Its to hard for me to apply back missing value to each row
